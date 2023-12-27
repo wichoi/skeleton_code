@@ -1,0 +1,50 @@
+#include <stdio.h>
+#include <string.h>
+#include <signal.h>
+#include <sys/time.h>
+
+#include "../common.h"
+#include "../debug/dbg-log.h"
+#include "../event/event.h"
+#include "timer.h"
+
+//typedef void timerCb(int signum);
+
+/*
+void timer_handler(int signum)
+{
+        static int count = 0;
+        printf("timer expired %d timers\n", ++count);
+}
+*/
+
+int set_timer(u64 tv_sec, u64 tv_usec, timerCb* cb)
+{
+    struct sigaction sa;
+    struct itimerval timer;
+
+    log_I("set_timer [%u][%u]\n", tv_sec, tv_usec);
+
+    /* Install timer_handler as the signal handler for SIGVTALRM. */
+    memset (&sa, 0, sizeof (sa));
+    sa.sa_handler = cb;
+    sigaction (SIGVTALRM, &sa, NULL);
+
+    /* Configure the timer to expire after 250 msec... */
+    timer.it_value.tv_sec = tv_sec;
+    timer.it_value.tv_usec = tv_usec; // 250000;
+
+    /* ... and every 250 msec after that. */
+    timer.it_interval.tv_sec = tv_sec;
+    timer.it_interval.tv_usec = tv_usec; // 250000;
+
+    /* Start a virtual timer. It counts down whenever this process is executing. */
+    setitimer (ITIMER_VIRTUAL, &timer, NULL);
+
+    return 0;
+}
+
+
+
+
+
