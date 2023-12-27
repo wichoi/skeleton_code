@@ -1,0 +1,11 @@
+syntax = "proto3";
+package stbp.v1;
+
+enum DownlinkMethods
+{
+}
+
+message LbtConfiguration
+{
+}
+

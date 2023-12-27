@@ -1,0 +1,15 @@
+syntax = "proto3";
+package stbp.v1.messages;
+
+import "configuration.proto";
+
+// request message
+message Configuration
+{
+}
+
+// response message
+message ConfigurationAcknowledgement
+{
+}
+

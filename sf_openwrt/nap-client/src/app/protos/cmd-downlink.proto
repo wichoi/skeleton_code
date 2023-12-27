@@ -1,0 +1,17 @@
+syntax = "proto3";
+package stbp.v1.commands;
+
+message Downlink
+{
+}
+
+// request message
+message DownlinkSet
+{
+}
+
+// response message
+message DownlinkAcknowledgement
+{
+}
+

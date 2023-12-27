@@ -1,0 +1,13 @@
+syntax = "proto3";
+package stbp.v1.messages;
+
+import "msg-frame.proto";
+import "msg-location.proto";
+import "msg-heartbeat.proto";
+import "msg-configuration.proto";
+
+// service definition.
+service AccessPointGateway
+{
+}
+

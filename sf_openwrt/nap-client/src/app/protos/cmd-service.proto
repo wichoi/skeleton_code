@@ -1,0 +1,12 @@
+syntax = "proto3";
+package stbp.v1.commands;
+
+import "cmd-configuration.proto";
+import "cmd-downlink.proto";
+import "cmd-upgrade.proto";
+
+// service definition.
+service AccessPointGatewayCommands
+{
+}
+

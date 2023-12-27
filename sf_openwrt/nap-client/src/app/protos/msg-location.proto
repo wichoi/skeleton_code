@@ -1,0 +1,13 @@
+syntax = "proto3";
+package stbp.v1.messages;
+
+// request message
+message Location
+{
+}
+
+// response message
+message LocationAcknowledgement
+{
+}
+

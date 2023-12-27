@@ -1,0 +1,19 @@
+syntax = "proto3";
+package stbp.v1.messages;
+
+import "google-protobuf.proto";
+
+// request message
+message FrameSet
+{
+}
+
+message Frame
+{
+}
+
+// response message
+message FramesAcknowledgement
+{
+}
+
