@@ -27,6 +27,8 @@ static void cli_example(void);
 static void cli_selftest(void);
 static void cli_set_timer(void);
 static void cli_kill_timer(void);
+static void cli_tcp_send(void);
+static void cli_udp_send(void);
 static void cli_exit(void);
 
 static const cli_cmd cmd_tbl[] =
@@ -39,6 +41,10 @@ static const cli_cmd cmd_tbl[] =
     { "set_timer",      cli_set_timer },
     { "kill_timer",     cli_kill_timer },
 
+    { "========== evcc test ==========", NULL },
+    { "tcp_send",       cli_tcp_send },
+    { "udp_send",       cli_udp_send },
+
     { "exit",           cli_exit }
 };
 
@@ -48,14 +54,14 @@ int cli_init(void)
     log_d("%s\n", __func__);
     _exit_flag = 0;
 
-    pthread_t main_thread;
+    pthread_t cli_thread;
     pthread_attr_t attr;
     pthread_attr_init(&attr);
-    if(pthread_create(&main_thread, &attr, (void*)cli_proc, NULL) < 0)
+    if(pthread_create(&cli_thread, &attr, (void*)cli_proc, NULL) < 0)
     {
         log_e("pthread_create failed\n");
     }
-    pthread_detach(main_thread);
+    pthread_detach(cli_thread);
     return ret_val;
 }
 
@@ -140,6 +146,18 @@ static void cli_kill_timer(void)
 {
     log_i("%s\n", __func__);
     timer_kill(TID_HELLO);
+}
+
+static void cli_tcp_send(void)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_TCP_SEND, OP_NONE, NULL, 0);
+}
+
+static void cli_udp_send(void)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_UDP_SEND, OP_NONE, NULL, 0);
 }
 
 static void cli_exit(void)

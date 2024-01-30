@@ -4,23 +4,28 @@
 
 #include "common.h"
 #include "log_service.h"
+#include "config_manager.h"
 #include "timer_service.h"
 #include "event_service.h"
 #include "main_task.h"
+#include "cli_task.h"
+#include "secc_task.h"
+#include "evcc_task.h"
 
 #include "main.h"
 
-enum
+typedef enum main_state_enum
 {
     MAIN_ST_NONE    = 0,
     MAIN_ST_INIT    = 1,
     MAIN_ST_PROC    = 2,
     MAIN_ST_DEINIT  = 3,
     MAIN_ST_EXIT    = 4
-};
+} main_st_e;
 
 static int _exit_flag = 0; // 0(run), 1(exit)
 static int _main_st = MAIN_ST_NONE;
+static int _is_evcc = 0;
 
 static int on_event(const event_data *ev);
 
@@ -45,33 +50,55 @@ int main_deinit(void)
     int ret_val = RET_OK;
     log_d("%s\n", __func__);
 
+    config_deinit();
     event_deinit();
     timer_deinit();
     cli_deinit();
+
+    if(_is_evcc == 1)
+    {
+        evcc_init();
+    }
+    else
+    {
+        secc_deinit();
+    }
 
     _exit_flag = 1;
     return ret_val;
 }
 
-int main_start(void)
+int main_start(int is_evcc)
 {
     int ret_val = RET_OK;
     debug_init(LOG_ENABLE, PRINT_INFO, NULL);
     log_i("%s\n", __func__);
+    _is_evcc = is_evcc;
 
+    config_init();
     event_init();
     timer_init();
     main_init();
     cli_init();
+    if(_is_evcc == 1)
+    {
+        evcc_init();
+    }
+    else
+    {
+        secc_init();
+    }
 
     return ret_val;
 }
 
 int main_proc(void)
 {
+    int prev_st = MAIN_ST_NONE;
     log_i("%s\n", __func__);
     while(_exit_flag == 0)
     {
+        prev_st = _main_st;
         switch(_main_st)
         {
             case MAIN_ST_NONE:
@@ -92,6 +119,17 @@ int main_proc(void)
             case MAIN_ST_EXIT:
                 _exit_flag = 1;
                 break;
+        }
+
+        if(prev_st != _main_st)
+        {
+            if(_main_st == MAIN_ST_NONE) log_i("MAIN_ST_NONE\n");
+            else if(_main_st == MAIN_ST_INIT) log_i("MAIN_ST_INIT\n");
+            else if(_main_st == MAIN_ST_PROC) log_i("MAIN_ST_PROC\n");
+            else if(_main_st == MAIN_ST_DEINIT) log_i("MAIN_ST_DEINIT\n");
+            else if(_main_st == MAIN_ST_EXIT) log_i("MAIN_ST_EXIT\n");
+            else log_i("MAIN_ST_UNKNOWN\n");
+            config_main_state_set(_main_st);
         }
         usleep(1000 * 10);
     }

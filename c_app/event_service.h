@@ -16,6 +16,8 @@
 #define EV_HELLO            9001
 #define EV_EXAMPLE          9002
 #define EV_SELFTEST         9100
+#define EV_TCP_SEND         9101
+#define EV_UDP_SEND         9102
 
 // operation code
 #define OP_NONE             0000
