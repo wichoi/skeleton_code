@@ -13,7 +13,7 @@
 #include "timer_service.h"
 #include "tcp_client.h"
 
-#undef AF_INET6 // todo
+//#undef AF_INET6
 
 #define TCP_LISTEN_PORT         15119
 
@@ -119,8 +119,9 @@ static int tcp_client_create(void)
     }
 
 #if defined(AF_INET6)
+    memset(&address6, 0, sizeof(address6));
     address6.sin6_family = AF_INET6;
-    address6.sin6_addr = htonl(INADDR_LOOPBACK);
+    address6.sin6_addr = in6addr_loopback;
     address6.sin6_port = htons(TCP_LISTEN_PORT);
     if(connect(_client_fd, (struct sockaddr *)&address6, sizeof(address6)) < 0)
     {

@@ -13,7 +13,7 @@
 #include "timer_service.h"
 #include "udp_client.h"
 
-#undef AF_INET6 // todo
+//#undef AF_INET6
 
 #define UDP_LISTEN_PORT         15118
 
@@ -118,8 +118,9 @@ static int udp_client_create(void)
     }
 
 #if defined(AF_INET6)
+    memset(&_address6, 0, sizeof(_address6));
     _address6.sin6_family = AF_INET6;
-    _address6.sin6_addr = htonl(INADDR_LOOPBACK);
+    _address6.sin6_addr = in6addr_loopback;
     _address6.sin6_port = htons(UDP_LISTEN_PORT);
 #else
     _address.sin_family = AF_INET;

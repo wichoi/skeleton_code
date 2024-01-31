@@ -13,7 +13,7 @@
 #include "timer_service.h"
 #include "udp_server.h"
 
-#undef AF_INET6 // todo
+//#undef AF_INET6
 
 #define UDP_LISTEN_PORT         15118
 
@@ -34,7 +34,7 @@ static int _udp_server_st = UDP_SERVER_ST_NONE;
 static int _server_fd = -1;
 #if defined(AF_INET6)
 static struct sockaddr_in6 _address6;
-static int _address6_size = sizeof(address6);
+static int _address6_size = sizeof(_address6);
 #else
 static struct sockaddr_in _client_addr;
 static int _client_addr_size = sizeof(_client_addr);
@@ -127,6 +127,7 @@ static int udp_server_create(void)
     }
 
 #if defined(AF_INET6)
+    memset(&address6, 0, sizeof(address6));
     address6.sin6_family = AF_INET6;
     address6.sin6_addr = in6addr_any;
     address6.sin6_port = htons(UDP_LISTEN_PORT);

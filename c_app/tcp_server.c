@@ -13,7 +13,7 @@
 #include "timer_service.h"
 #include "tcp_server.h"
 
-#undef AF_INET6 // todo
+//#undef AF_INET6
 
 #define TCP_LISTEN_PORT         15119
 
@@ -119,12 +119,13 @@ static int tcp_server_create(void)
     }
 
 #if defined(AF_INET6)
+    memset(&address6, 0, sizeof(address6));
     address6.sin6_family = AF_INET6;
     address6.sin6_addr = in6addr_any;
     address6.sin6_port = htons(TCP_LISTEN_PORT);
     if(bind(_server_fd, (struct sockaddr *)&address6, sizeof(address6)) < 0)
     {
-        log_e("%s socket bind failed !!!\n", __func__);
+        log_e("%s socket bind failed errno[%d] !!!\n", __func__, errno);
         close(_server_fd);
         return RET_ERR;
     }
