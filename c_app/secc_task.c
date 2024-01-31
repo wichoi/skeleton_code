@@ -9,6 +9,7 @@
 #include "event_service.h"
 #include "timer_service.h"
 #include "secc_task.h"
+#include "secc_message.h"
 #include "tcp_server.h"
 #include "udp_server.h"
 
@@ -28,8 +29,19 @@ typedef enum secc_state_enum
     SECC_ST_EXIT            = 11
 } secc_st_e;
 
+typedef struct secc_evnet_tag
+{
+    u32 init:1;
+    u32 plug:1;
+    u32 udp_sdp:1;
+    u32 tcp_session:1;
+    u32 service:1;
+    u32 error:1;
+} secc_event_t;
+
 static int _exit_flag = 0; // 0(run), 1(exit)
 static int _secc_st = SECC_ST_NONE;
+static secc_event_t _secc_event;
 
 static void secc_proc(void);
 static void secc_state(void);
@@ -41,6 +53,7 @@ int secc_init(void)
     log_i("%s\n", __func__);
     _exit_flag = 0;
     _secc_st = SECC_ST_NONE;
+    memset((char*)&_secc_event, 0, sizeof(_secc_event));
 
     pthread_t secc_thread;
     pthread_attr_t attr;
@@ -54,8 +67,28 @@ int secc_init(void)
     event_subscribe(EV_INIT, on_event);
     event_subscribe(EV_DEINIT, on_event);
     event_subscribe(EV_EXIT, on_event);
+
+    event_subscribe(EV_SECC_UDP_RECV, on_event);
+    event_subscribe(EV_SECC_UDP_SEND, on_event);
+    event_subscribe(EV_SECC_TCP_RECV, on_event);
+    event_subscribe(EV_SECC_TCP_SEND, on_event);
+
+    event_subscribe(EV_SECC_IDLE, on_event);
+    event_subscribe(EV_SECC_PLUG, on_event);
+    event_subscribe(EV_SECC_SESSION_START, on_event);
+    event_subscribe(EV_SECC_SESSION_SETUP, on_event);
+    event_subscribe(EV_SECC_SERVICE, on_event);
+    event_subscribe(EV_SECC_AUTHORIZATION, on_event);
+    event_subscribe(EV_SECC_CHARGING_PARAM, on_event);
+    event_subscribe(EV_SECC_POWER_DELIVERY, on_event);
+    event_subscribe(EV_SECC_SESSION_STOP, on_event);
+    event_subscribe(EV_SECC_DEINIT, on_event);
+    event_subscribe(EV_SECC_ERROR, on_event);
+    event_subscribe(EV_SECC_DISCONNECT, on_event);
+
     event_subscribe(EV_SELFTEST, on_event);
 
+    secc_msg_init();
     tcp_server_init();
     udp_server_init();
 
@@ -68,6 +101,7 @@ int secc_deinit(void)
     log_i("%s\n", __func__);
     _exit_flag = 1;
 
+    secc_msg_deinit();
     tcp_server_deinit();
     udp_server_deinit();
 
@@ -98,18 +132,32 @@ static void secc_state(void)
             }
             break;
         case SECC_ST_INIT:
+            memset((char*)&_secc_event, 0, sizeof(_secc_event));
             _secc_st = SECC_ST_IDLE;
             break;
         case SECC_ST_IDLE:
-            // todo plug connect
+            if(_secc_event.plug == 1)
+            {
+                _secc_st = SECC_ST_SESSION_START;
+            }
             break;
         case SECC_ST_SESSION_START:
-            // todo udp socket listen
+            if(_secc_event.udp_sdp == 1)
+            {
+                _secc_st = SECC_ST_SESSION_SETUP;
+            }
             break;
         case SECC_ST_SESSION_SETUP:
-            // todo tcp socket listen
+            if(_secc_event.tcp_session == 1)
+            {
+                _secc_st = SECC_ST_SERVICE;
+            }
             break;
         case SECC_ST_SERVICE:
+            if(_secc_event.service == 1)
+            {
+                _secc_st = SECC_ST_AUTHORIZATION;
+            }
             break;
         case SECC_ST_AUTHORIZATION:
             break;
@@ -170,6 +218,7 @@ static int secc_selftest(const event_data *ev)
 static int on_event(const event_data *ev)
 {
     int ret_val = RET_OK;
+    log_i("%s [%d]\n", __func__, ev->event);
     switch(ev->event)
     {
         case EV_INIT:
@@ -177,6 +226,43 @@ static int on_event(const event_data *ev)
         case EV_DEINIT:
             break;
         case EV_EXIT:
+            break;
+        case EV_SECC_UDP_RECV:
+            break;
+        case EV_SECC_UDP_SEND:
+            break;
+        case EV_SECC_TCP_RECV:
+            break;
+        case EV_SECC_TCP_SEND:
+            break;
+        case EV_SECC_IDLE:
+            break;
+        case EV_SECC_PLUG:
+            _secc_event.plug = 1;
+            break;
+        case EV_SECC_SESSION_START:
+            _secc_event.udp_sdp = 1;
+            break;
+        case EV_SECC_SESSION_SETUP:
+            _secc_event.tcp_session = 1;
+            break;
+        case EV_SECC_SERVICE:
+            _secc_event.service = 1;
+            break;
+        case EV_SECC_AUTHORIZATION:
+            break;
+        case EV_SECC_CHARGING_PARAM:
+            break;
+        case EV_SECC_POWER_DELIVERY:
+            break;
+        case EV_SECC_SESSION_STOP:
+            break;
+        case EV_SECC_DEINIT:
+            break;
+        case EV_SECC_ERROR:
+            _secc_event.error = 1;
+            break;
+        case EV_SECC_DISCONNECT:
             break;
         case EV_SELFTEST:
             secc_selftest(ev);

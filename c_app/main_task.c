@@ -57,7 +57,7 @@ int main_deinit(void)
 
     if(_is_evcc == 1)
     {
-        evcc_init();
+        evcc_deinit();
     }
     else
     {

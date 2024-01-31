@@ -10,7 +10,7 @@
 #include "timer_service.h"
 #include "cli_task.h"
 
-typedef void(*cli_fp)(void);
+typedef void(*cli_fp)(const char*);
 
 typedef struct
 {
@@ -21,15 +21,23 @@ typedef struct
 static int _exit_flag = 0; // 0(run), 1(exit)
 
 static void cli_proc(void);
-static void cli_help(void);
-static void cli_hello(void);
-static void cli_example(void);
-static void cli_selftest(void);
-static void cli_set_timer(void);
-static void cli_kill_timer(void);
-static void cli_tcp_send(void);
-static void cli_udp_send(void);
-static void cli_exit(void);
+static void cli_help(const char *input);
+static void cli_hello(const char *input);
+static void cli_example(const char *input);
+static void cli_selftest(const char *input);
+static void cli_set_timer(const char *input);
+static void cli_kill_timer(const char *input);
+
+static void cli_secc_plug(const char *input);
+static void cli_secc_udp_sdp(const char *input);
+static void cli_secc_tcp_session(const char *input);
+static void cli_secc_service(const char *input);
+static void cli_secc_error(const char *input);
+
+static void cli_tcp_send(const char *input);
+static void cli_udp_send(const char *input);
+
+static void cli_exit(const char *input);
 
 static const cli_cmd cmd_tbl[] =
 {
@@ -41,7 +49,14 @@ static const cli_cmd cmd_tbl[] =
     { "set_timer",      cli_set_timer },
     { "kill_timer",     cli_kill_timer },
 
-    { "========== evcc test ==========", NULL },
+    { "========== secc cmd ==========", NULL },
+    { "secc_plug",      cli_secc_plug },
+    { "secc_udp",       cli_secc_udp_sdp },
+    { "secc_tcp",       cli_secc_tcp_session },
+    { "secc_service",   cli_secc_service },
+    { "secc_error",     cli_secc_error },
+
+    { "========== evcc cmd ==========", NULL },
     { "tcp_send",       cli_tcp_send },
     { "udp_send",       cli_udp_send },
 
@@ -77,17 +92,16 @@ static void cli_proc(void)
 {
     int i = 0;
     char buf[128] = {0,};
-
     while(_exit_flag == 0)
     {
         memset(buf, 0, sizeof(buf));
         gets(buf);
         for(i = 0; i<sizeof(cmd_tbl)/sizeof(cmd_tbl[0]); i++)
         {
-            if(strcmp(cmd_tbl[i].str, buf) == 0)
+            if(strncmp(cmd_tbl[i].str, buf, strlen(cmd_tbl[i].str)) == 0)
             {
                 log_v("input cmd : %s\n", cmd_tbl[i].str);
-                cmd_tbl[i].func();
+                cmd_tbl[i].func(buf);
                 break;
             }
         }
@@ -95,30 +109,30 @@ static void cli_proc(void)
     }
 }
 
-static void cli_help(void)
+static void cli_help(const char *input)
 {
-    printf("\n===== command list =====\n");
+    debug_printf("\n===== command list =====\n");
     int i;
     for(i = 0; i<sizeof(cmd_tbl)/sizeof(cmd_tbl[0]); i++)
     {
-        printf("%s\n", cmd_tbl[i].str);
+        debug_printf("%s\n", cmd_tbl[i].str);
     }
-    printf("========================\n");
+    debug_printf("========================\n");
 }
 
-static void cli_hello(void)
+static void cli_hello(const char *input)
 {
     log_i("%s\n", __func__);
     event_publish(EV_HELLO, OP_NONE, NULL, 0);
 }
 
-static void cli_example(void)
+static void cli_example(const char *input)
 {
     log_i("%s\n", __func__);
     event_publish(EV_EXAMPLE, OP_NONE, NULL, 0);
 }
 
-static void cli_selftest(void)
+static void cli_selftest(const char *input)
 {
     log_i("%s\n", __func__);
     event_publish(EV_SELFTEST, OP_NONE, NULL, 0);
@@ -136,31 +150,61 @@ static void cli_on_timer(const u32 tid)
     }
 }
 
-static void cli_set_timer(void)
+static void cli_set_timer(const char *input)
 {
     log_i("%s\n", __func__);
     timer_set(TID_HELLO, 1000, cli_on_timer);
 }
 
-static void cli_kill_timer(void)
+static void cli_kill_timer(const char *input)
 {
     log_i("%s\n", __func__);
     timer_kill(TID_HELLO);
 }
 
-static void cli_tcp_send(void)
+static void cli_secc_plug(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_SECC_PLUG, OP_NONE, NULL, 0);
+}
+
+static void cli_secc_udp_sdp(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_SECC_SESSION_START, OP_NONE, NULL, 0);
+}
+
+static void cli_secc_tcp_session(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_SECC_SESSION_SETUP, OP_NONE, NULL, 0);
+}
+
+static void cli_secc_service(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_SECC_SERVICE, OP_NONE, NULL, 0);
+}
+
+static void cli_secc_error(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_SECC_ERROR, OP_NONE, NULL, 0);
+}
+
+static void cli_tcp_send(const char *input)
 {
     log_i("%s\n", __func__);
     event_publish(EV_TCP_SEND, OP_NONE, NULL, 0);
 }
 
-static void cli_udp_send(void)
+static void cli_udp_send(const char *input)
 {
     log_i("%s\n", __func__);
     event_publish(EV_UDP_SEND, OP_NONE, NULL, 0);
 }
 
-static void cli_exit(void)
+static void cli_exit(const char *input)
 {
     log_i("%s\n", __func__);
     event_publish(EV_EXIT, OP_NONE, NULL, 0);

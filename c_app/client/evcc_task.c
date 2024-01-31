@@ -9,6 +9,7 @@
 #include "event_service.h"
 #include "timer_service.h"
 #include "evcc_task.h"
+#include "evcc_message.h"
 #include "tcp_client.h"
 #include "udp_client.h"
 
@@ -28,8 +29,17 @@ typedef enum evcc_state_enum
     EVCC_ST_EXIT            = 11
 } evcc_st_e;
 
+typedef struct evcc_cmd_tag
+{
+    int plug;
+    int udp_sdp;
+    int tcp_session;
+    int service;
+} evcc_cmd_t;
+
 static int _exit_flag = 0; // 0(run), 1(exit)
 static int _evcc_st = EVCC_ST_NONE;
+static evcc_cmd_t _evcc_cmd;
 
 static void evcc_proc(void);
 static void evcc_state(void);
@@ -41,6 +51,7 @@ int evcc_init(void)
     log_i("%s\n", __func__);
     _exit_flag = 0;
     _evcc_st = EVCC_ST_NONE;
+    memset((char*)&_evcc_cmd, 0, sizeof(_evcc_cmd));
 
     pthread_t evcc_thread;
     pthread_attr_t attr;
@@ -56,6 +67,7 @@ int evcc_init(void)
     event_subscribe(EV_EXIT, on_event);
     event_subscribe(EV_SELFTEST, on_event);
 
+    evcc_msg_init();
     tcp_client_init();
     udp_client_init();
 
@@ -68,6 +80,7 @@ int evcc_deinit(void)
     log_i("%s\n", __func__);
     _exit_flag = 1;
 
+    evcc_msg_deinit();
     tcp_client_deinit();
     udp_client_deinit();
 
@@ -98,18 +111,32 @@ static void evcc_state(void)
             }
             break;
         case EVCC_ST_INIT:
+            memset((char*)&_evcc_cmd, 0, sizeof(_evcc_cmd));
             _evcc_st = EVCC_ST_IDLE;
             break;
         case EVCC_ST_IDLE:
-            // todo plug connect
+            if(_evcc_cmd.plug == 1)
+            {
+                _evcc_st = EVCC_ST_SESSION_START;
+            }
             break;
         case EVCC_ST_SESSION_START:
-            // todo udp socket listen
+            if(_evcc_cmd.udp_sdp == 1)
+            {
+                _evcc_st = EVCC_ST_SESSION_SETUP;
+            }
             break;
         case EVCC_ST_SESSION_SETUP:
-            // todo tcp socket listen
+            if(_evcc_cmd.tcp_session == 1)
+            {
+                _evcc_st = EVCC_ST_SERVICE;
+            }
             break;
         case EVCC_ST_SERVICE:
+            if(_evcc_cmd.service == 1)
+            {
+                _evcc_st = EVCC_ST_AUTHORIZATION;
+            }
             break;
         case EVCC_ST_AUTHORIZATION:
             break;

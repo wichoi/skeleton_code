@@ -114,18 +114,15 @@ void debug_print(char level, const char *format, ...)
     }
 
     const char *prefix_str = log_prefix();
-    fprintf(g_dbg_console, "%s", prefix_str);
-    if(g_dbg_file)
-    {
-        fprintf(g_dbg_file, "%s", prefix_str);
-    }
-
     va_list argp;
     va_start(argp, format);
+    fprintf(g_dbg_console, "%s", prefix_str);
     vfprintf(g_dbg_console, format, argp);
+    fflush(g_dbg_console);
     if(g_dbg_file)
     {
         va_start(argp, format);
+        fprintf(g_dbg_file, "%s", prefix_str);
         vfprintf(g_dbg_file, format, argp);
         fflush(g_dbg_file);
         if (ftell(g_dbg_file) > g_log_file_size)
@@ -134,8 +131,6 @@ void debug_print(char level, const char *format, ...)
         }
     }
     va_end(argp);
-    //fputc('\n', g_dbg_stream);
-    fflush(g_dbg_console);
 }
 
 void debug_printf(const char *format, ...)
@@ -150,6 +145,7 @@ void debug_printf(const char *format, ...)
     va_list argp;
     va_start(argp, format);
     vfprintf(g_dbg_console, format, argp);
+    fflush(g_dbg_console);
     if(g_dbg_file)
     {
         va_start(argp, format);

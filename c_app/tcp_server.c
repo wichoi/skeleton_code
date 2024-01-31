@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <fcntl.h>
 #include <errno.h>
 
 #include "common.h"
@@ -172,7 +173,7 @@ static int tcp_server_listen_proc(void *arg)
     int addrlen = sizeof(clientaddr);
     char str[INET6_ADDRSTRLEN + 1] = {0,};
     int server_fd = *(int *)arg;
-    int conn_fd = -1; // _conn_fd
+    //int conn_fd = -1; // _conn_fd
     log_i("%s\n", __func__);
 
     while(_exit_flag == 0)
@@ -219,23 +220,22 @@ static int tcp_server_recv_proc(void *arg)
     int rc = 0;
     char buffer[2048] = {0,};
     int conn_fd = *(int *)arg;
-
-    log_i("%s\n", __func__);
+    //int flag = fcntl(conn_fd, F_GETFL, 0);
+    //fcntl(conn_fd, F_SETFL, flag | O_NONBLOCK);
+    log_i("%s[%d]\n", __func__, conn_fd);
     while(_exit_flag == 0)
     {
         if(conn_fd > 0)
         {
             rc = recv(conn_fd, buffer, sizeof(buffer), 0);
-            if (rc < 0)
+            if (rc <= 0)
             {
-                log_e("%s errno[%d]\n", __func__, errno);
                 if(errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
                 {
-                    continue; /* restart for EINTR */
                 }
                 else
                 {
-                    /* if 0, disconnect, otherwise error */
+                    log_e("%s errno[%d]\n", __func__, errno);
                     break;
                 }
             }
@@ -244,9 +244,11 @@ static int tcp_server_recv_proc(void *arg)
                 // todo, recv_callback or event_publish
                 tcp_server_send(conn_fd, buffer, rc);
             }
+            //usleep(1000 * 100);
         }
     }
 
+    log_i("%s[%d] exit\n", __func__, conn_fd);
     close(conn_fd);
     return ret;
 }
@@ -266,11 +268,10 @@ int tcp_server_send(int fd, char *data, int len)
            log_e("%s errno[%d]\n", __func__, errno);
            if(errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
            {
-               continue; /* restart for EINTR */
            }
            else
            {
-               return RET_ERR; /* if 0, disconnect, otherwise error */
+               return RET_ERR;
            }
         }
         else

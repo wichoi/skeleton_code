@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <fcntl.h>
 #include <errno.h>
 
 #include "common.h"
@@ -168,8 +169,9 @@ static int udp_server_recv_proc(void *arg)
     int rc = 0;
     char buffer[2048] = {0,};
     int conn_fd = *(int *)arg;
-
-    log_i("%s\n", __func__);
+    //int flag = fcntl(conn_fd, F_GETFL, 0);
+    //fcntl(conn_fd, F_SETFL, flag | O_NONBLOCK);
+    log_i("%s[%d]\n", __func__, conn_fd);
     while(_exit_flag == 0)
     {
         if(conn_fd > 0)
@@ -181,7 +183,7 @@ static int udp_server_recv_proc(void *arg)
             rc = recvfrom(conn_fd, buffer, sizeof(buffer), 0,
                         (struct sockaddr*)&_client_addr, &_client_addr_size);
 #endif
-            if (rc < 0)
+            if (rc <= 0)
             {
                 log_e("%s errno[%d]\n", __func__, errno);
                 if(errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
@@ -200,8 +202,10 @@ static int udp_server_recv_proc(void *arg)
                 udp_server_send(conn_fd, buffer, rc);
             }
         }
+        //usleep(1000 * 100);
     }
 
+    log_i("%s[%d] exit\n", __func__, conn_fd);
     close(conn_fd);
     return ret;
 }
