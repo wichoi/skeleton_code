@@ -175,7 +175,20 @@ static int udp_client_recv_proc(void *arg)
             }
             else if(rc > 0)
             {
-                // todo, recv_callback or event_publish
+                int cnt = rc / EV_DATA_SZ;
+                int frag = rc % EV_DATA_SZ;
+                int i = 0;
+                for(i = 0; i <= cnt; i++)
+                {
+                    if((cnt == 0 || cnt == i) && (frag > 0))
+                    {
+                        event_publish(EV_EVCC_UDP_RECV, OP_NONE, buffer + (i * EV_DATA_SZ), frag);
+                    }
+                    else
+                    {
+                        event_publish(EV_EVCC_UDP_RECV, OP_NONE, buffer + (i * EV_DATA_SZ), EV_DATA_SZ);
+                    }
+                }
             }
         }
     }

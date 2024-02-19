@@ -198,8 +198,21 @@ static int udp_server_recv_proc(void *arg)
             }
             else if(rc > 0)
             {
-                // todo, recv_callback or event_publish
-                udp_server_send(conn_fd, buffer, rc);
+                int cnt = rc / EV_DATA_SZ;
+                int frag = rc % EV_DATA_SZ;
+                int i = 0;
+                for(i = 0; i <= cnt; i++)
+                {
+                    if((cnt == 0 || cnt == i) && (frag > 0))
+                    {
+                        event_publish(EV_SECC_UDP_RECV, OP_NONE, buffer + (i * EV_DATA_SZ), frag);
+                    }
+                    else
+                    {
+                        event_publish(EV_SECC_UDP_RECV, OP_NONE, buffer + (i * EV_DATA_SZ), EV_DATA_SZ);
+                    }
+                }
+                //udp_server_send(conn_fd, buffer, rc);
             }
         }
         //usleep(1000 * 100);

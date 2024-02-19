@@ -8,7 +8,7 @@
 
 #define Q_INACTIVE          0
 #define Q_ACTIVE            1
-#define EV_QUEUE_SZ         16
+#define EV_QUEUE_SZ         32
 #define EV_SUBSCRIBE_SZ     256
 
 typedef struct _ev_subscribe_item

@@ -183,7 +183,20 @@ static int tcp_client_recv_proc(void *arg)
             }
             else if(rc > 0)
             {
-                // todo, recv_callback or event_publish
+                int cnt = rc / EV_DATA_SZ;
+                int frag = rc % EV_DATA_SZ;
+                int i = 0;
+                for(i = 0; i <= cnt; i++)
+                {
+                    if((cnt == 0 || cnt == i) && (frag > 0))
+                    {
+                        event_publish(EV_EVCC_TCP_RECV, OP_NONE, buffer + (i * EV_DATA_SZ), frag);
+                    }
+                    else
+                    {
+                        event_publish(EV_EVCC_TCP_RECV, OP_NONE, buffer + (i * EV_DATA_SZ), EV_DATA_SZ);
+                    }
+                }
             }
         }
     }
@@ -193,7 +206,7 @@ static int tcp_client_recv_proc(void *arg)
     return ret;
 }
 
-int tcp_client_send(int fd, char *data, int len)
+int tcp_client_send(int fd, char *data, size_t len)
 {
     int ret = RET_OK;
     int rc = 0;

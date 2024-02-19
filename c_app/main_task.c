@@ -11,6 +11,7 @@
 #include "cli_task.h"
 #include "secc_task.h"
 #include "evcc_task.h"
+#include "utils.h"
 
 #include "main.h"
 
@@ -54,6 +55,7 @@ int main_deinit(void)
     event_deinit();
     timer_deinit();
     cli_deinit();
+    utils_deinit();
 
     if(_is_evcc == 1)
     {
@@ -80,6 +82,8 @@ int main_start(int is_evcc)
     timer_init();
     main_init();
     cli_init();
+    utils_init();
+
     if(_is_evcc == 1)
     {
         evcc_init();

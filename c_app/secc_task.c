@@ -228,10 +228,13 @@ static int on_event(const event_data *ev)
         case EV_EXIT:
             break;
         case EV_SECC_UDP_RECV:
+            secc_msg_recv(ev->data, ev->len);
             break;
         case EV_SECC_UDP_SEND:
             break;
         case EV_SECC_TCP_RECV:
+            //log_i("%s EV_SECC_TCP_RECV len[%d] data[%s]\n", __func__, ev->len, ev->data);
+            secc_msg_recv(ev->data, ev->len);
             break;
         case EV_SECC_TCP_SEND:
             break;
