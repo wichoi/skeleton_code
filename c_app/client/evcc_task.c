@@ -65,6 +65,37 @@ int evcc_init(void)
     event_subscribe(EV_INIT, on_event);
     event_subscribe(EV_DEINIT, on_event);
     event_subscribe(EV_EXIT, on_event);
+
+    event_subscribe(EV_EVCC_UDP_RECV, on_event);
+    event_subscribe(EV_EVCC_UDP_SEND, on_event);
+    event_subscribe(EV_EVCC_TCP_RECV, on_event);
+    event_subscribe(EV_EVCC_TCP_SEND, on_event);
+
+    event_subscribe(EV_EVCC_IDLE, on_event);
+    event_subscribe(EV_EVCC_PLUG, on_event);
+    event_subscribe(EV_EVCC_SESSION_START, on_event);
+    event_subscribe(EV_EVCC_SUPPORTED_APP, on_event);
+    event_subscribe(EV_EVCC_SESSION_SETUP, on_event);
+    event_subscribe(EV_EVCC_SERVICE_DISCOVER, on_event);
+    event_subscribe(EV_EVCC_SERVICE_DETAIL, on_event);
+    event_subscribe(EV_EVCC_PAYMENT_SEL, on_event);
+    event_subscribe(EV_EVCC_PAYMENT_DETAIL, on_event);
+    event_subscribe(EV_EVCC_AUTHORIZATION, on_event);
+    event_subscribe(EV_EVCC_CHARGING_PARAM, on_event);
+    event_subscribe(EV_EVCC_POWER_DELIVERY, on_event);
+    event_subscribe(EV_EVCC_CERT_UPDATE, on_event);
+    event_subscribe(EV_EVCC_CERT_INSTALL, on_event);
+    event_subscribe(EV_EVCC_SESSION_STOP, on_event);
+    event_subscribe(EV_EVCC_CHARGING_STATUS, on_event);
+    event_subscribe(EV_EVCC_METERING_RECEIPT, on_event);
+    event_subscribe(EV_EVCC_CABLE_CHECK, on_event);
+    event_subscribe(EV_EVCC_PRE_CHARGE, on_event);
+    event_subscribe(EV_EVCC_CURRENT_DEMAND, on_event);
+    event_subscribe(EV_EVCC_WELDING_DETECTION, on_event);
+    event_subscribe(EV_EVCC_DEINIT, on_event);
+    event_subscribe(EV_EVCC_ERROR, on_event);
+    event_subscribe(EV_EVCC_DISCONNECT, on_event);
+
     event_subscribe(EV_SELFTEST, on_event);
 
     evcc_msg_init();

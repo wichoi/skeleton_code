@@ -30,9 +30,30 @@ static void cli_kill_timer(const char *input);
 
 static void cli_secc_plug(const char *input);
 static void cli_secc_udp_sdp(const char *input);
-static void cli_secc_tcp_session(const char *input);
+static void cli_secc_supported_app(const char *input);
 static void cli_secc_service(const char *input);
+static void cli_secc_cert_update(const char *input);
+static void cli_secc_cert_install(const char *input);
 static void cli_secc_error(const char *input);
+static void cli_evcc_udp_sdp(const char *input);
+static void cli_evcc_supported_app(const char *input);
+static void cli_evcc_session_setup(const char *input);
+static void cli_evcc_service_discover(const char *input);
+static void cli_evcc_service_detail(const char *input);
+static void cli_evcc_payment_select(const char *input);
+static void cli_evcc_payment_detail(const char *input);
+static void cli_evcc_authorization(const char *input);
+static void cli_evcc_charging_param(const char *input);
+static void cli_evcc_power_delivery(const char *input);
+static void cli_evcc_cert_update(const char *input);
+static void cli_evcc_certi_install(const char *input);
+static void cli_evcc_session_stop(const char *input);
+static void cli_evcc_charging_status(const char *input);
+static void cli_evcc_metering_receipt(const char *input);
+static void cli_evcc_cable_check(const char *input);
+static void cli_evcc_pre_charge(const char *input);
+static void cli_evcc_current_demand(const char *input);
+static void cli_evcc_welding_detection(const char *input);
 
 static void cli_tcp_send(const char *input);
 static void cli_udp_send(const char *input);
@@ -41,26 +62,50 @@ static void cli_exit(const char *input);
 
 static const cli_cmd cmd_tbl[] =
 {
-    { "ls",             cli_help },
-    { "help",           cli_help },
-    { "hello",          cli_hello },
-    { "example",        cli_example },
-    { "selftest",       cli_selftest },
-    { "set_timer",      cli_set_timer },
-    { "kill_timer",     cli_kill_timer },
+    { "ls",                 cli_help },
+    { "help",               cli_help },
+    { "hello",              cli_hello },
+    { "example",            cli_example },
+    { "selftest",           cli_selftest },
+    { "set_timer",          cli_set_timer },
+    { "kill_timer",         cli_kill_timer },
 
     { "========== secc cmd ==========", NULL },
-    { "secc_plug",      cli_secc_plug },
-    { "secc_udp",       cli_secc_udp_sdp },
-    { "secc_tcp",       cli_secc_tcp_session },
-    { "secc_service",   cli_secc_service },
-    { "secc_error",     cli_secc_error },
+    { "secc_plug",          cli_secc_plug },
+    { "secc_sdp",           cli_secc_udp_sdp },
+    { "secc_support",       cli_secc_supported_app },
+    { "secc_service",       cli_secc_service },
+    { "secc_cert_update",   cli_secc_cert_update },
+    { "secc_cert_install",  cli_secc_cert_update },
+
+    { "secc_error",         cli_secc_error },
 
     { "========== evcc cmd ==========", NULL },
-    { "tcp_send",       cli_tcp_send },
-    { "udp_send",       cli_udp_send },
+    { "evcc_sdp",           cli_evcc_udp_sdp },
+    { "evcc_support",       cli_evcc_supported_app },
+    { "evcc_session",       cli_evcc_session_setup },
+    { "evcc_serv_discover", cli_evcc_service_discover },
+    { "evcc_serv_detail",   cli_evcc_service_detail },
+    { "evcc_pay_sel",       cli_evcc_payment_select },
+    { "evcc_pay_detail",    cli_evcc_payment_detail },
+    { "evcc_auth",          cli_evcc_authorization },
+    { "evcc_charge_param",  cli_evcc_charging_param },
+    { "evcc_power",         cli_evcc_power_delivery },
+    { "evcc_cert_update",   cli_evcc_cert_update },
+    { "evcc_cert_install",  cli_evcc_certi_install },
+    { "evcc_stop",          cli_evcc_session_stop },
+    { "evcc_charging",      cli_evcc_charging_status },
+    { "evcc_metering",      cli_evcc_metering_receipt },
+    { "evcc_cable",         cli_evcc_cable_check },
+    { "evcc_pre",           cli_evcc_pre_charge },
+    { "evcc_demand",        cli_evcc_current_demand },
+    { "evcc_weld",          cli_evcc_welding_detection },
 
-    { "exit",           cli_exit }
+    { "========== socket test ==========", NULL },
+    { "tcp_send",           cli_tcp_send },
+    { "udp_send",           cli_udp_send },
+
+    { "exit",               cli_exit }
 };
 
 int cli_init(void)
@@ -174,22 +219,148 @@ static void cli_secc_udp_sdp(const char *input)
     event_publish(EV_SECC_SESSION_START, OP_NONE, NULL, 0);
 }
 
-static void cli_secc_tcp_session(const char *input)
+static void cli_secc_supported_app(const char *input)
 {
     log_i("%s\n", __func__);
-    event_publish(EV_SECC_SESSION_SETUP, OP_NONE, NULL, 0);
+    event_publish(EV_SECC_SUPPORTED_APP, OP_NONE, NULL, 0);
 }
 
 static void cli_secc_service(const char *input)
 {
     log_i("%s\n", __func__);
-    event_publish(EV_SECC_SERVICE, OP_NONE, NULL, 0);
+    event_publish(EV_SECC_SERVICE_DISCOVER, OP_NONE, NULL, 0);
+}
+
+static void cli_secc_cert_update(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_SECC_CERT_UPDATE, OP_NONE, NULL, 0);
+}
+
+static void cli_secc_cert_install(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_SECC_CERT_INSTALL, OP_NONE, NULL, 0);
 }
 
 static void cli_secc_error(const char *input)
 {
     log_i("%s\n", __func__);
     event_publish(EV_SECC_ERROR, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_udp_sdp(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_SESSION_START, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_supported_app(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_SUPPORTED_APP, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_session_setup(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_SESSION_SETUP, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_service_discover(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_SERVICE_DISCOVER, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_service_detail(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_SERVICE_DETAIL, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_payment_select(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_PAYMENT_SEL, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_payment_detail(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_PAYMENT_DETAIL, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_authorization(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_AUTHORIZATION, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_charging_param(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_CHARGING_PARAM, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_power_delivery(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_POWER_DELIVERY, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_cert_update(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_CERT_UPDATE, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_certi_install(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_CERT_INSTALL, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_session_stop(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_SESSION_STOP, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_charging_status(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_CHARGING_STATUS, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_metering_receipt(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_METERING_RECEIPT, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_cable_check(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_CABLE_CHECK, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_pre_charge(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_PRE_CHARGE, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_current_demand(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_CURRENT_DEMAND, OP_NONE, NULL, 0);
+}
+
+static void cli_evcc_welding_detection(const char *input)
+{
+    log_i("%s\n", __func__);
+    event_publish(EV_EVCC_WELDING_DETECTION, OP_NONE, NULL, 0);
 }
 
 static void cli_tcp_send(const char *input)

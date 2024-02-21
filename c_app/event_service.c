@@ -71,7 +71,7 @@ int event_publish(u32 ev, u32 op_code, char* data, u32 len)
         _ev_q[_ev_head].event = ev;
         _ev_q[_ev_head].op_code = op_code;
         _ev_q[_ev_head].len = 0;
-        if(len > 0 && len < EV_DATA_SZ)
+        if(len > 0 && len <= EV_DATA_SZ)
         {
             _ev_q[_ev_head].len = len;
             memcpy(_ev_q[_ev_head].data, data, len);

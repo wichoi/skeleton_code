@@ -175,6 +175,7 @@ static int udp_client_recv_proc(void *arg)
             }
             else if(rc > 0)
             {
+                log_i("%s recv_len[%d]\n", __func__, rc);
                 int cnt = rc / EV_DATA_SZ;
                 int frag = rc % EV_DATA_SZ;
                 int i = 0;

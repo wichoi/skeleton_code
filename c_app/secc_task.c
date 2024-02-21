@@ -34,7 +34,8 @@ typedef struct secc_evnet_tag
     u32 init:1;
     u32 plug:1;
     u32 udp_sdp:1;
-    u32 tcp_session:1;
+    u32 supported_app:1;
+    u32 session_session:1;
     u32 service:1;
     u32 error:1;
 } secc_event_t;
@@ -76,12 +77,24 @@ int secc_init(void)
     event_subscribe(EV_SECC_IDLE, on_event);
     event_subscribe(EV_SECC_PLUG, on_event);
     event_subscribe(EV_SECC_SESSION_START, on_event);
+    event_subscribe(EV_SECC_SUPPORTED_APP, on_event);
     event_subscribe(EV_SECC_SESSION_SETUP, on_event);
-    event_subscribe(EV_SECC_SERVICE, on_event);
+    event_subscribe(EV_SECC_SERVICE_DISCOVER, on_event);
+    event_subscribe(EV_SECC_SERVICE_DETAIL, on_event);
+    event_subscribe(EV_SECC_PAYMENT_SEL, on_event);
+    event_subscribe(EV_SECC_PAYMENT_DETAIL, on_event);
     event_subscribe(EV_SECC_AUTHORIZATION, on_event);
     event_subscribe(EV_SECC_CHARGING_PARAM, on_event);
     event_subscribe(EV_SECC_POWER_DELIVERY, on_event);
+    event_subscribe(EV_SECC_CERT_UPDATE, on_event);
+    event_subscribe(EV_SECC_CERT_INSTALL, on_event);
     event_subscribe(EV_SECC_SESSION_STOP, on_event);
+    event_subscribe(EV_SECC_CHARGING_STATUS, on_event);
+    event_subscribe(EV_SECC_METERING_RECEIPT, on_event);
+    event_subscribe(EV_SECC_CABLE_CHECK, on_event);
+    event_subscribe(EV_SECC_PRE_CHARGE, on_event);
+    event_subscribe(EV_SECC_CURRENT_DEMAND, on_event);
+    event_subscribe(EV_SECC_WELDING_DETECTION, on_event);
     event_subscribe(EV_SECC_DEINIT, on_event);
     event_subscribe(EV_SECC_ERROR, on_event);
     event_subscribe(EV_SECC_DISCONNECT, on_event);
@@ -148,7 +161,7 @@ static void secc_state(void)
             }
             break;
         case SECC_ST_SESSION_SETUP:
-            if(_secc_event.tcp_session == 1)
+            if(_secc_event.session_session == 1)
             {
                 _secc_st = SECC_ST_SERVICE;
             }
@@ -228,13 +241,13 @@ static int on_event(const event_data *ev)
         case EV_EXIT:
             break;
         case EV_SECC_UDP_RECV:
-            secc_msg_recv(ev->data, ev->len);
+            secc_msg_recv((char*)ev->data, ev->len);
             break;
         case EV_SECC_UDP_SEND:
             break;
         case EV_SECC_TCP_RECV:
             //log_i("%s EV_SECC_TCP_RECV len[%d] data[%s]\n", __func__, ev->len, ev->data);
-            secc_msg_recv(ev->data, ev->len);
+            secc_msg_recv((char*)ev->data, ev->len);
             break;
         case EV_SECC_TCP_SEND:
             break;
