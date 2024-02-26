@@ -6,6 +6,8 @@
 
 #include "common.h"
 #include "log_service.h"
+#include "tools_list.h"
+#include "utils.h"
 #include "event_service.h"
 #include "timer_service.h"
 #include "cli_task.h"
@@ -27,6 +29,7 @@ static void cli_example(const char *input);
 static void cli_selftest(const char *input);
 static void cli_set_timer(const char *input);
 static void cli_kill_timer(const char *input);
+static void cli_tools_list(const char *input);
 
 static void cli_secc_plug(const char *input);
 static void cli_secc_udp_sdp(const char *input);
@@ -69,6 +72,7 @@ static const cli_cmd cmd_tbl[] =
     { "selftest",           cli_selftest },
     { "set_timer",          cli_set_timer },
     { "kill_timer",         cli_kill_timer },
+    { "list_test",          cli_tools_list },
 
     { "========== secc cmd ==========", NULL },
     { "secc_plug",          cli_secc_plug },
@@ -205,6 +209,54 @@ static void cli_kill_timer(const char *input)
 {
     log_i("%s\n", __func__);
     timer_kill(TID_HELLO);
+}
+
+static void cli_tools_list(const char *input)
+{
+    log_i("%s\n", __func__);
+
+    int i = 0;
+    list_item_t *item;
+    list_t *list_handle = (list_t*)list_new();
+    list_handle->push_back(list_handle, "0.TEST1234", strlen("1.TEST1234"));
+    list_handle->push_back(list_handle, "1.TEMP", strlen("1.TEMP"));
+    list_handle->push_back(list_handle, "2.DATA12345", strlen("2.DATA12345"));
+    list_handle->push_back(list_handle, "3.dummy", strlen("3.dummy"));
+    list_handle->push_back(list_handle, "4.1234567890", strlen("4.1234567890"));
+    list_handle->push_back(list_handle, "5.1234567890", strlen("5.1234567890"));
+
+    log_i("list_handle->cnt[%d]\n", list_handle->cnt);
+    for(i = 0; i <list_handle->cnt; i++)
+    {
+        item = list_handle->get(list_handle, i);
+        log_i("index[%d] len[%02d] data[%s]\n", i, item->len, item->data);
+    }
+
+    list_handle->erase(list_handle, 5);
+    list_handle->erase(list_handle, 0);
+    list_handle->erase(list_handle, 2);
+
+    log_i("list_handle->cnt[%d]\n", list_handle->cnt);
+    for(i = 0; i <list_handle->cnt; i++)
+    {
+        item = list_handle->get(list_handle, i);
+        log_i("index[%d] item->data[%s]\n", i, item->data);
+    }
+
+    list_handle->clear(list_handle);
+    log_i("%s, list_handle->cnt[%d]\n", __func__, list_handle->cnt);
+
+    list_handle->push_back(list_handle, "6.1234567890", strlen("6.1234567890"));
+    log_i("list_handle->cnt[%d]\n", list_handle->cnt);
+    for(i = 0; i <list_handle->cnt; i++)
+    {
+        item = list_handle->get(list_handle, i);
+        log_i("index[%d] len[%02d] data[%s]\n", i, item->len, item->data);
+    }
+
+    list_handle->free(list_handle);
+    list_handle = NULL;
+    log_i("list_handle[%X]\n", list_handle);
 }
 
 static void cli_secc_plug(const char *input)
