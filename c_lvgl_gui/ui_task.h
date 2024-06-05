@@ -17,6 +17,14 @@
 #define UI_EVENT_HELLO              9000
 #define UI_EVENT_TEST               9001
 
+typedef struct ui_event_tag
+{
+    int event;
+    int param;
+    char data[32];
+    int len;
+} ui_ev_t;
+
 int ui_event_put(int event, int param, char *data, int len);
 
 #endif // __UI_TASK_H__

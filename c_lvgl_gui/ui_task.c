@@ -1,13 +1,15 @@
+#include <stdio.h>
+#include <string.h>
+
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/display.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/logging/log.h>
+
 #include <lvgl.h>
 #include <lvgl_input_device.h>
-#include <stdio.h>
-#include <string.h>
 
 #include "ui_task.h"
 #include "window/ui_wnd.h"
@@ -19,14 +21,6 @@ LOG_MODULE_REGISTER(ui, CONFIG_DISPLAY_LOG_LEVEL);
 #define Q_INACTIVE              0
 #define Q_ACTIVE                1
 #define UI_Q_CNT                0x0F
-
-typedef struct ui_event_tag
-{
-    int event;
-    int param;
-    char data[32];
-    int len;
-} ui_ev_t;
 
 static ui_ev_t _ev_q[UI_Q_CNT + 1] = {0,};
 static uint8_t _ev_head = 0;
@@ -141,7 +135,7 @@ static int ui_event_proc(void)
     case UI_EVENT_WND_PAINT:
     case UI_EVENT_WND_EVENT:
     case UI_EVENT_WND_LIST:
-        ui_wnd_proc(ev.event, ev.param, ev.data, ev.len);
+        ui_wnd_proc(&ev);
         break;
     case UI_EVENT_HELLO:
         ui_hello(&ev);
@@ -170,10 +164,21 @@ void ui_main(void *arg1, void *arg2, void *arg3)
 
     ui_init();
     ui_wnd_init();
-    ui_event_put(UI_EVENT_WND_CREATE, UI_WND_POWER_ON, NULL, 0);
+
+    // set default style
+    static lv_style_t def_style;
+    lv_style_init(&def_style);
+    LV_FONT_DECLARE(kr_font_ChosunKg_24);
+    lv_style_set_text_font(&def_style, &kr_font_ChosunKg_24);
+    lv_style_set_bg_color(&def_style, lv_color_black());
+    //lv_style_set_opa(&def_style, LV_OPA_COVER);
+    lv_obj_add_style(lv_scr_act(), &def_style, 0);
+    //lv_obj_add_style(lv_layer_top(), &def_style, 0);
+    //lv_obj_add_style(lv_layer_sys(), &def_style, 0);
 
     lv_task_handler();
     display_blanking_off(display_dev);
+    ui_event_put(UI_EVENT_WND_CREATE, UI_WND_BOOTING, NULL, 0);
 
     while (1)
     {
@@ -194,28 +199,70 @@ void ui_main(void *arg1, void *arg2, void *arg3)
 static int cmd_ui_wnd_idle(const struct shell *sh, size_t argc, char **argv, void *data)
 {
     shell_fprintf(sh, SHELL_NORMAL, "%s\n", __func__);
-    ui_event_put(UI_EVENT_WND_CREATE, UI_WND_IDLE, NULL, 0);
+    ui_event_put(UI_EVENT_WND_CREATE_EX, UI_WND_IDLE, NULL, 0);
+    return 0;
+}
+
+static int cmd_ui_wnd_booting(const struct shell *sh, size_t argc, char **argv, void *data)
+{
+    shell_fprintf(sh, SHELL_NORMAL, "%s\n", __func__);
+    ui_event_put(UI_EVENT_WND_CREATE_EX, UI_WND_BOOTING, NULL, 0);
+    return 0;
+}
+
+static int cmd_ui_wnd_error(const struct shell *sh, size_t argc, char **argv, void *data)
+{
+    shell_fprintf(sh, SHELL_NORMAL, "%s\n", __func__);
+    ui_event_put(UI_EVENT_WND_CREATE_EX, UI_WND_ERROR, NULL, 0);
+    return 0;
+}
+
+static int cmd_ui_wnd_credit_card(const struct shell *sh, size_t argc, char **argv, void *data)
+{
+    shell_fprintf(sh, SHELL_NORMAL, "%s\n", __func__);
+    ui_event_put(UI_EVENT_WND_CREATE_EX, UI_WND_CREDIT_CARD, NULL, 0);
     return 0;
 }
 
 static int cmd_ui_wnd_charging(const struct shell *sh, size_t argc, char **argv, void *data)
 {
     shell_fprintf(sh, SHELL_NORMAL, "%s\n", __func__);
-    ui_event_put(UI_EVENT_WND_CREATE, UI_WND_CHARGING, NULL, 0);
+    ui_event_put(UI_EVENT_WND_CREATE_EX, UI_WND_CHARGING, NULL, 0);
     return 0;
 }
 
-static int cmd_ui_wnd_power_on(const struct shell *sh, size_t argc, char **argv, void *data)
+static int cmd_ui_wnd_finishing(const struct shell *sh, size_t argc, char **argv, void *data)
 {
     shell_fprintf(sh, SHELL_NORMAL, "%s\n", __func__);
-    ui_event_put(UI_EVENT_WND_CREATE, UI_WND_POWER_ON, NULL, 0);
+    ui_event_put(UI_EVENT_WND_CREATE_EX, UI_WND_FINISHING, NULL, 0);
     return 0;
 }
 
-static int cmd_ui_wnd_power_off(const struct shell *sh, size_t argc, char **argv, void *data)
+static int cmd_ui_wnd_complete(const struct shell *sh, size_t argc, char **argv, void *data)
 {
     shell_fprintf(sh, SHELL_NORMAL, "%s\n", __func__);
-    ui_event_put(UI_EVENT_WND_CREATE_EX, UI_WND_POWER_OFF, NULL, 0);
+    ui_event_put(UI_EVENT_WND_CREATE_EX, UI_WND_COMPLETE, NULL, 0);
+    return 0;
+}
+
+static int cmd_ui_wnd_stop(const struct shell *sh, size_t argc, char **argv, void *data)
+{
+    shell_fprintf(sh, SHELL_NORMAL, "%s\n", __func__);
+    ui_event_put(UI_EVENT_WND_CREATE_EX, UI_WND_STOP, NULL, 0);
+    return 0;
+}
+
+static int cmd_ui_wnd_auth(const struct shell *sh, size_t argc, char **argv, void *data)
+{
+    shell_fprintf(sh, SHELL_NORMAL, "%s\n", __func__);
+    ui_event_put(UI_EVENT_WND_CREATE_EX, UI_WND_AUTH, NULL, 0);
+    return 0;
+}
+
+static int cmd_ui_wnd_cable(const struct shell *sh, size_t argc, char **argv, void *data)
+{
+    shell_fprintf(sh, SHELL_NORMAL, "%s\n", __func__);
+    ui_event_put(UI_EVENT_WND_CREATE_EX, UI_WND_CABLE, NULL, 0);
     return 0;
 }
 
@@ -256,9 +303,15 @@ static int cmd_ui_wnd_list(const struct shell *sh, size_t argc, char **argv, voi
 
 SHELL_STATIC_SUBCMD_SET_CREATE(ui_wnd,
     SHELL_CMD(idle,     NULL,   "cmd_ui_wnd_idle",      cmd_ui_wnd_idle),
+    SHELL_CMD(boot,     NULL,   "cmd_ui_wnd_booting",   cmd_ui_wnd_booting),
+    SHELL_CMD(err,      NULL,   "cmd_ui_wnd_error",     cmd_ui_wnd_error),
+    SHELL_CMD(credit,   NULL,   "cmd_ui_wnd_credit_card", cmd_ui_wnd_credit_card),
     SHELL_CMD(charging, NULL,   "cmd_ui_wnd_charging",  cmd_ui_wnd_charging),
-    SHELL_CMD(power_on, NULL,   "cmd_ui_wnd_power_on",  cmd_ui_wnd_power_on),
-    SHELL_CMD(power_off, NULL,  "cmd_ui_wnd_power_off", cmd_ui_wnd_power_off),
+    SHELL_CMD(finishing,NULL,   "cmd_ui_wnd_finishing", cmd_ui_wnd_finishing),
+    SHELL_CMD(complete ,NULL,   "cmd_ui_wnd_complete",  cmd_ui_wnd_complete),
+    SHELL_CMD(stop,     NULL,   "cmd_ui_wnd_stop",      cmd_ui_wnd_stop),
+    SHELL_CMD(auth,     NULL,   "cmd_ui_wnd_auth",      cmd_ui_wnd_auth),
+    SHELL_CMD(cable,    NULL,   "cmd_ui_wnd_cable",     cmd_ui_wnd_cable),
     SHELL_CMD(clear,    NULL,   "cmd_ui_wnd_clear",     cmd_ui_wnd_clear),
     SHELL_CMD(clear_all,NULL,   "cmd_ui_wnd_clear_all", cmd_ui_wnd_clear_all),
     SHELL_CMD(paint,    NULL,   "cmd_ui_wnd_paint",     cmd_ui_wnd_paint),
