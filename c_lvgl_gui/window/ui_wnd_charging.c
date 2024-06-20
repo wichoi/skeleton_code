@@ -77,7 +77,7 @@ static int on_create(ui_ev_t *ev)
     _rect_charging = lv_obj_create(lv_scr_act());
     lv_obj_set_pos(_rect_charging, UI_CHARGING_PROC_X, UI_CHARGING_PROC_Y);
     lv_obj_set_size(_rect_charging, UI_CHARGING_PROC_W, UI_CHARGING_PROC_H);
-    lv_obj_set_style_bg_color(_rect_charging, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(_rect_charging, lv_palette_main(LV_PALETTE_GREEN), LV_PART_MAIN);
 
     _label_time = lv_label_create(lv_scr_act());
     lv_label_set_text(_label_time, "충전시간");

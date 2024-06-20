@@ -23,11 +23,6 @@ K_TIMER_DEFINE(wnd_complete_timer, on_timer,NULL);
 #define UI_COMPLETE_ICON_X          50
 #define UI_COMPLETE_ICON_Y          110
 
-#define UI_COMPLETE_PROC_X          45
-#define UI_COMPLETE_PROC_Y          140
-#define UI_COMPLETE_PROC_W          28
-#define UI_COMPLETE_PROC_H          37
-
 #define UI_COMPLETE_TIME_X          190
 #define UI_COMPLETE_TIME_Y          80
 

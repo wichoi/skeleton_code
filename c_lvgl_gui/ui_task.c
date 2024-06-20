@@ -26,6 +26,7 @@ static ui_ev_t _ev_q[UI_Q_CNT + 1] = {0,};
 static uint8_t _ev_head = 0;
 static uint8_t _ev_tail = 0;
 static uint8_t _is_active = Q_INACTIVE;
+static uint8_t _exit_flag = 0;
 
 static int ui_init(void)
 {
@@ -35,6 +36,7 @@ static int ui_init(void)
     _ev_head = 0;
     _ev_tail = 0;
     _is_active = Q_ACTIVE;
+    _exit_flag = 0;
 
     return 0;
 }
@@ -47,6 +49,7 @@ static int ui_deinit(void)
     _ev_head = 0;
     _ev_tail = 0;
     _is_active = Q_INACTIVE;
+    _exit_flag = 1;
 
     return 0;
 }
@@ -143,6 +146,10 @@ static int ui_event_proc(void)
     case UI_EVENT_TEST:
         ui_test(&ev);
         break;
+    case UI_EVENT_EXIT:
+        LOG_INF("UI_EVENT_EXIT");
+        _exit_flag = 1;
+        break;
     default:
         break;
     }
@@ -180,15 +187,15 @@ void ui_main(void *arg1, void *arg2, void *arg3)
     display_blanking_off(display_dev);
     ui_event_put(UI_EVENT_WND_CREATE, UI_WND_BOOTING, NULL, 0);
 
-    while (1)
+    while (_exit_flag == 0)
     {
         ui_event_proc();
         lv_task_handler();
         k_sleep(K_MSEC(10));
     }
 
-    ui_deinit();
     ui_wnd_deinit();
+    ui_deinit();
     LOG_INF("%s end ...", __func__);
 }
 

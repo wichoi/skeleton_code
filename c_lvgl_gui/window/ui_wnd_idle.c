@@ -30,8 +30,8 @@ K_TIMER_DEFINE(wnd_idle_timer, on_timer,NULL);
 static ui_wnd_handle _wnd_handle = {0,};
 
 static lv_obj_t *_qr = NULL;
-static lv_obj_t *_label = NULL;
 static lv_obj_t *_icon = NULL;
+static lv_obj_t *_label = NULL;
 
 static uint32_t _idle_cnt = 0;
 

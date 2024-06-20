@@ -105,6 +105,15 @@ int ui_wnd_init(void)
 int ui_wnd_deinit(void)
 {
     LOG_INF("%s", __func__);
+    if(_wnd_stack.cnt > 0)
+    {
+        _wnd_stack.wnd_stack[_wnd_stack.cnt - 1].handle->destory(NULL);
+        _wnd_stack.wnd_stack[_wnd_stack.cnt - 1].id = 0;
+        _wnd_stack.wnd_stack[_wnd_stack.cnt - 1].handle = NULL;
+        _wnd_stack.cnt--;
+    }
+    memset((char*)&_list_handle, 0, sizeof(_list_handle));
+    memset((char*)&_wnd_stack, 0, sizeof(_wnd_stack));
     return 0;
 }
 
@@ -120,6 +129,11 @@ int ui_wnd_proc(ui_ev_t *ev)
             {
                 if(_wnd_stack.cnt > 0)
                 {
+                    if(_wnd_stack.wnd_stack[_wnd_stack.cnt - 1].id == _list_handle.wnd_list[index].id)
+                    {
+                        return 0;
+                    }
+
                     _wnd_stack.wnd_stack[_wnd_stack.cnt - 1].handle->suspend(ev);
                     _wnd_stack.wnd_stack[_wnd_stack.cnt - 1].handle->destory(ev);
                 }
@@ -138,15 +152,20 @@ int ui_wnd_proc(ui_ev_t *ev)
         break;
     case UI_EVENT_WND_CREATE_EX:
         {
+            int index = ui_wnd_find(ev->param);
             if(_wnd_stack.cnt > 0)
             {
+                if(_wnd_stack.wnd_stack[_wnd_stack.cnt - 1].id == _list_handle.wnd_list[index].id)
+                {
+                    return 0;
+                }
+
                 _wnd_stack.wnd_stack[_wnd_stack.cnt - 1].handle->destory(ev);
                 _wnd_stack.wnd_stack[_wnd_stack.cnt - 1].id = 0;
                 _wnd_stack.wnd_stack[_wnd_stack.cnt - 1].handle = NULL;
                 _wnd_stack.cnt--;
             }
 
-            int index = ui_wnd_find(ev->param);
             if(index != -1 && _wnd_stack.cnt < WND_STACK_MAX)
             {
                 _wnd_stack.wnd_stack[_wnd_stack.cnt].id = _list_handle.wnd_list[index].id;

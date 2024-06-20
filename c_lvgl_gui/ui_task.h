@@ -17,6 +17,8 @@
 #define UI_EVENT_HELLO              9000
 #define UI_EVENT_TEST               9001
 
+#define UI_EVENT_EXIT               9100
+
 typedef struct ui_event_tag
 {
     int event;
