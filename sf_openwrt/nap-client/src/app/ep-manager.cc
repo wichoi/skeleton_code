@@ -33,7 +33,7 @@ ep_manager::~ep_manager()
 int ep_manager::init()
 {
     int ret_val = RET_OK;
-    log_d("ep_manager::%s \n", __func__);
+    log_d("ep_manager::%s\n", __func__);
     ep_log_read();
     return ret_val;
 }
@@ -88,7 +88,7 @@ int ep_manager::ep_log_read(void)
 free_all:
     if(fp != NULL) fclose(fp);
 
-    log_i("%s ret_val[%d] \n", __func__, ret_val);
+    log_i("%s ret_val[%d]\n", __func__, ret_val);
     return ret_val;
 }
 
@@ -146,13 +146,13 @@ int ep_manager::ep_log_write(dat_grpc_frame::item_list &ul_dat)
 free_all:
     if(fp != NULL) fclose(fp);
 
-    log_d("%s ret_val[%d] \n", __func__, ret_val);
+    log_d("%s ret_val[%d]\n", __func__, ret_val);
     return ret_val;
 }
 
 int ep_manager::ep_log_delete(void)
 {
-    log_i("%s \n", __func__);
+    log_i("%s\n", __func__);
     if(access(EPLOG_FILE, F_OK) == 0)
     {
         remove(EPLOG_FILE);

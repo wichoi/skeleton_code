@@ -53,7 +53,7 @@ void backup_log_file()
         g_dbg_file = fopen(g_log_path, "wt");
         if (g_dbg_file == NULL)
         {
-            printf("file open error, path(%s) \n", g_log_path);
+            printf("file open error, path(%s)\n", g_log_path);
         }
     }
 }
@@ -79,6 +79,11 @@ void debug_init(log_type_e enable, char level, const char * file_path)
     g_log_level = level;
     g_dbg_console = stderr; // stdout;
 
+    if(access("/data/DEBUG", F_OK) == 0)
+    {
+        g_dbg_console = fopen("/dev/ttyS0", "a+");
+    }
+
     if(file_path != NULL)
     {
         strcpy(g_log_path, file_path);
@@ -88,12 +93,17 @@ void debug_init(log_type_e enable, char level, const char * file_path)
         g_dbg_file = fopen(file_path, "a+");
         if(g_dbg_file == NULL)
         {
-            printf("file open error, path(%s) \n", file_path);
+            printf("file open error, path(%s)\n", file_path);
         }
     }
 }
 void debug_finish()
 {
+    if(access("/data/DEBUG", F_OK) == 0)
+    {
+        fclose(g_dbg_console);
+    }
+
     g_dbg_console = NULL;
     if (g_dbg_file)
     {

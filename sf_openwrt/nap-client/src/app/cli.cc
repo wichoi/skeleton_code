@@ -117,6 +117,26 @@ int cli::proc(void)
         string read_str = "";
         getline(cin, read_str);
 
+        if(read_str.length() == 0)
+        {
+            if(access("/data/cli", F_OK) == 0)
+            {
+                char cmd_buf[128] = {0,};
+                FILE *cmd_fd = fopen("/data/cli", "r");
+                size_t ret = fread(cmd_buf, sizeof(char), sizeof(cmd_buf) - 1, cmd_fd);
+                if(ret > 0)
+                {
+                    if(cmd_buf[ret - 1] == '\n')
+                    {
+                        cmd_buf[ret - 1] = NULL;
+                    }
+                    read_str = cmd_buf;
+                }
+                fclose(cmd_fd);
+                remove("/data/cli");
+            }
+        }
+
         if(read_str.length() > 0)
         {
             list<data_c>::iterator iter;
@@ -156,14 +176,14 @@ int cli::parser(string read_str, list<string> *param)
     int ret = RET_OK;
     char *ptr = NULL;
     char *next_ptr = NULL;
-    log_d("%s : %s \n", __func__, read_str.c_str());
+    log_d("%s : %s\n", __func__, read_str.c_str());
 
     ptr = strtok_r((char*)read_str.c_str(), " ", &next_ptr);
     while(ptr != NULL)
     {
         char buf[128] = {0,};
         memcpy(buf, ptr, strlen(ptr));
-        //log_d("%s \n", buf);
+        //log_d("%s\n", buf);
         param->push_back(buf);
         ptr = strtok_r(NULL, " ", &next_ptr);
     }
@@ -174,13 +194,13 @@ int cli::parser(string read_str, list<string> *param)
 int cli::help(list<string> *param)
 {
     int ret_val = RET_OK;
-    printf("===============  cli menu  =============== \n");
+    debug_printf("===============  cli menu  ===============\n");
     list<data_c>::iterator iter;
     for(iter = _cli_menu.begin(); iter != _cli_menu.end(); ++iter)
     {
-        printf("%s : %s\n", iter->_str.c_str(), iter->_help.c_str());
+        debug_printf("%s : %s\n", iter->_str.c_str(), iter->_help.c_str());
     }
-    printf("========================================== \n");
+    debug_printf("==========================================\n");
     return ret_val;
 }
 
@@ -284,7 +304,7 @@ int cli::set_timer(list<string> *param)
     }
     else
     {
-        log_d("%s invalid param \n", __func__);
+        log_d("%s invalid param\n", __func__);
     }
     return ret_val;
 }
@@ -308,7 +328,7 @@ int cli::kill_timer(list<string> *param)
     }
     else
     {
-        log_d("%s invalid param \n", __func__);
+        log_d("%s invalid param\n", __func__);
     }
     return ret_val;
 }
@@ -338,6 +358,7 @@ int cli::conf_write(list<string> *param)
 int cli::conf_update(list<string> *param)
 {
     int ret_val = RET_OK;
+    log_i("%s\n", __func__);
     _p_main->event_publish(event_c::CMD_UPDATE_CONFIG);
     return ret_val;
 }

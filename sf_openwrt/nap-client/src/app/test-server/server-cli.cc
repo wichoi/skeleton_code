@@ -97,14 +97,14 @@ int server_cli::parser(std::string read_str, std::list<std::string> *param)
     int ret = RET_OK;
     char *ptr = NULL;
     char *next_ptr = NULL;
-    log_d("%s : %s \n", __func__, read_str.c_str());
+    log_d("%s : %s\n", __func__, read_str.c_str());
 
     ptr = strtok_r((char*)read_str.c_str(), " ", &next_ptr);
     while(ptr != NULL)
     {
         char buf[128] = {0,};
         memcpy(buf, ptr, strlen(ptr));
-        //log_d("%s \n", buf);
+        //log_d("%s\n", buf);
         param->push_back(buf);
         ptr = strtok_r(NULL, " ", &next_ptr);
     }
@@ -115,13 +115,13 @@ int server_cli::parser(std::string read_str, std::list<std::string> *param)
 int server_cli::cli_help(std::list<std::string> *param)
 {
     int ret_val = RET_OK;
-    printf("==========  cli menu  ========== \n");
+    printf("==========  cli menu  ==========\n");
     std::list<cli_data_c>::iterator iter;
     for(iter = _cli_menu.begin(); iter != _cli_menu.end(); ++iter)
     {
         printf("%s : %s\n", iter->_str.c_str(), iter->_help.c_str());
     }
-    printf("================================ \n");
+    printf("================================\n");
     return ret_val;
 }
 

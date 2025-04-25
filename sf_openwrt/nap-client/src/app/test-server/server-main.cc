@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 
     arg_parser(argc, argv, &log_level);
     debug_init(LOG_ENABLE, log_level, NULL);
-    log_print(log_level, "Sigfox NAP server start !!! \n");
+    log_print(log_level, "Sigfox NAP server start !!!\n");
 
     server_proc server;
     server.init();
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
         usleep(10 * 1000); // 10msec
     }
 
-    log_print(log_level, "Sigfox NAP server exit !!! \n");
+    log_print(log_level, "Sigfox NAP server exit !!!\n");
     return ret_val;
 }
 

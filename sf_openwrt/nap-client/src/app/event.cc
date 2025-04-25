@@ -39,6 +39,11 @@ int event_queue::deinit(void)
     return ret_val;
 }
 
+u32 event_queue::get_info(void)
+{
+    return _ev_q.size();
+}
+
 int event_queue::subscribe_event(int cmd, event_listener *p_listener)
 {
     if(_init_flag == 0)
@@ -57,7 +62,7 @@ int event_queue::put_event(u32 cmd, u32 op_code, shared_ptr<dat_c> data)
         return RET_ERROR;
 
     int ret_val = RET_OK;
-    log_v("%s : %u, op_code : %u \n", __func__, cmd, op_code);
+    log_v("%s : %u, op_code : %u\n", __func__, cmd, op_code);
 
     _mtx.lock();
     event_c ev;
@@ -70,7 +75,7 @@ int event_queue::put_event(u32 cmd, u32 op_code, shared_ptr<dat_c> data)
     }
     else
     {
-        log_w("event_queue::%s queue_full[%d] \n", __func__, QUE_MAX);
+        log_w("event_queue::%s queue_full[%d]\n", __func__, QUE_MAX);
         exit(1);
     }
     _mtx.unlock();
@@ -88,7 +93,7 @@ int event_queue::get_event(event_c &ev)
     _mtx.lock();
     if(_ev_q.size() > 0)
     {
-        log_v("%s : %u, op_code : %u \n",
+        log_v("%s : %u, op_code : %u\n",
                 __func__, _ev_q.front()._cmd, _ev_q.front()._op_code);
         ev = move(_ev_q.front());
         _ev_q.pop_front();

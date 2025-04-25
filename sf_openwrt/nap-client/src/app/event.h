@@ -120,6 +120,7 @@ private:
 public:
     int init(void);
     int deinit(void);
+    u32 get_info(void);
     int subscribe_event(int cmd, event_listener *p_listener);
     int put_event(u32 cmd, u32 op_code, shared_ptr<dat_c> data = NULL);
     int get_event(event_c &ev);

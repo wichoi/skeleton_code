@@ -21,6 +21,7 @@
 
 #include "log.h"
 #include "utils.h"
+#include "config-manager.h"
 
 #ifdef LINUX_PC_APP
 #else
@@ -185,6 +186,90 @@ int utils::read_ip_addr(string &ip_addr, string &ip_type, string &ifname)
     return RET_OK;
 }
 
+u32 utils::read_eth1_tx(void)
+{
+    u32 data = 0;
+    string path = "/sys/class/net/eth1/statistics/tx_bytes";
+    FILE *fp = fopen(path.c_str(), "r");
+    if(fp != NULL)
+    {
+        fscanf(fp, "%u", &data);
+        fclose(fp);
+    }
+    log_d("%s %d\n", __func__, data);
+    return data;
+}
+
+u32 utils::read_eth1_rx(void)
+{
+    u32 data = 0;
+    string path = "/sys/class/net/eth1/statistics/rx_bytes";
+    FILE *fp = fopen(path.c_str(), "r");
+    if(fp != NULL)
+    {
+        fscanf(fp, "%u", &data);
+        fclose(fp);
+    }
+    log_d("%s %d\n", __func__, data);
+    return data;
+}
+
+u32 utils::read_ppp0_tx(void)
+{
+    u32 data = 0;
+    string path = "/sys/class/net/ppp0/statistics/tx_bytes";
+    FILE *fp = fopen(path.c_str(), "r");
+    if(fp != NULL)
+    {
+        fscanf(fp, "%u", &data);
+        fclose(fp);
+    }
+    log_d("%s %d\n", __func__, data);
+    return data;
+}
+
+u32 utils::read_ppp0_rx(void)
+{
+    u32 data = 0;
+    string path = "/sys/class/net/ppp0/statistics/rx_bytes";
+    FILE *fp = fopen(path.c_str(), "r");
+    if(fp != NULL)
+    {
+        fscanf(fp, "%u", &data);
+        fclose(fp);
+    }
+    log_d("%s %d\n", __func__, data);
+    return data;
+}
+
+u32 utils::read_apcli0_tx(void)
+{
+    u32 data = 0;
+    string path = "/sys/class/net/apcli0/statistics/tx_bytes";
+    FILE *fp = fopen(path.c_str(), "r");
+    if(fp != NULL)
+    {
+        fscanf(fp, "%u", &data);
+        fclose(fp);
+    }
+    log_d("%s %d\n", __func__, data);
+    return data;
+}
+
+u32 utils::read_apcli0_rx(void)
+{
+    u32 data = 0;
+    string path = "/sys/class/net/apcli0/statistics/rx_bytes";
+    FILE *fp = fopen(path.c_str(), "r");
+    if(fp != NULL)
+    {
+        fscanf(fp, "%u", &data);
+        fclose(fp);
+    }
+    log_d("%s %d\n", __func__, data);
+    return data;
+}
+
 int utils::read_mac(string &mac, string ifname)
 {
 #ifdef LINUX_PC_APP
@@ -240,7 +325,7 @@ int utils::read_link_state(bool &link_st, string &ifname)
                 log_v("%s Read fail\n", __func__);
             }
 
-            //log_i("%s value[0x%02X] \n", __func__, value);
+            //log_i("%s value[0x%02X]\n", __func__, value);
             if(value & 0x0001)
             {
                 link_st = true;
@@ -452,6 +537,77 @@ int utils::set_local_time(s64 utc_time)
     return RET_OK;
 }
 
+void utils::utc_to_gpstime(int32_t *wn, int32_t *tow) // GPS week number,GPS time of week
+{
+    system_clock::time_point now_time = system_clock::now();
+    time_t curr_time = system_clock::to_time_t(now_time);
+    struct tm *t = localtime(&curr_time);
+    uint32_t year = t->tm_year + 1900;
+    uint8_t mon = t->tm_mon + 1;
+    uint8_t day = t->tm_mday;
+    uint8_t hour = t->tm_hour;
+    uint8_t min = t->tm_min;
+    uint8_t sec = t->tm_sec;
+
+    int32_t iYearsElapsed; //Elapsed years since 1980
+    int32_t iDaysElapsed; //Elapsed days since Jan 5/Jan 6, 1980
+    int32_t iLeapDays; //Leap days since Jan 5/Jan 6, 1980
+    int32_t i;
+
+    //Number of days at the start of each month (ignore leap years).
+    uint16_t doy[12]={0,31,59,90,120,151,181,212,243,273,304,334};
+
+    iYearsElapsed = year - 1980;
+    i = 0;
+    iLeapDays =0;
+    while(i <=iYearsElapsed)
+    {
+        if((i % 100) == 20)
+        {
+            if((i % 400) == 20)
+            {
+                iLeapDays++;
+            }
+        }
+        else if((i % 4) == 0)
+        {
+            iLeapDays++;
+        }
+        i++;
+    }
+    /*  iLeapDays = iYearsElapsed / 4 + 1; */
+    if((iYearsElapsed % 100) == 20)
+    {
+        if(((iYearsElapsed % 400) == 20) && (mon <= 2))
+        {
+            iLeapDays--;
+        }
+    }
+    else if(((iYearsElapsed % 4) == 0) && (mon <= 2))
+    {
+        iLeapDays--;
+    }
+    iDaysElapsed = iYearsElapsed * 365 + doy[mon -1] + day + iLeapDays - 6;
+    //Convert time to GPS weeks and seconds.
+    *wn = iDaysElapsed / 7;
+    *tow =((iDaysElapsed % 7) * 86400) + (hour * 3600 + min * 60) + sec;
+}
+
+int utils::get_utc_time(int &year, int &month, int &day, int &hour, int &min, int &sec)
+{
+    system_clock::time_point now_time = system_clock::now();
+    time_t curr_time = system_clock::to_time_t(now_time);
+    struct tm *t = localtime(&curr_time);
+    year = t->tm_year + 1900;
+    month = t->tm_mon + 1;
+    day = t->tm_mday;
+    hour = t->tm_hour;
+    min = t->tm_min;
+    sec = t->tm_sec;
+    log_d("%s %d-%d-%d-%d:%d:%d\n", year, month, day, hour, min, sec);
+    return RET_OK;
+}
+
 u32 utils::read_uptime(void)
 {
     u32 uptime;
@@ -613,9 +769,9 @@ int utils::system_call(string &cmd)
     return result;
 }
 
-int utils::file_size(string &file_path)
+u32 utils::file_size(string file_path)
 {
-    int file_sz = 0;
+    u32 file_sz = 0;
     FILE *fp = fopen(file_path.c_str(), "r");
     if(fp != NULL)
     {
@@ -696,6 +852,12 @@ int utils::nvram_rt2860_set(string &key, string &value)
     return result;
 }
 
+int utils::nvram_rt2860_commit(void)
+{
+    nvram_commit(1);
+    return RET_OK;
+}
+
 int utils::modem_gps_updating_check(void)
 {
     int ret_val = RET_ERROR;
@@ -771,6 +933,7 @@ int utils::modem_conf_get(string key, int &value)
             if(res != NULL)
             {
                 value = res->valueint;
+                ret_val = RET_OK;
             }
         }
         cJSON_Delete(json_obj);
@@ -803,6 +966,7 @@ int utils::modem_conf_get(string key, double &value)
             if(res != NULL)
             {
                 value = res->valuedouble;
+                ret_val = RET_OK;
             }
         }
         cJSON_Delete(json_obj);
@@ -834,7 +998,11 @@ int utils::modem_conf_get(string key, string &value)
             cJSON *res = cJSON_GetObjectItemCaseSensitive(json_obj, key.c_str());
             if(res != NULL)
             {
-                value = res->valuestring;
+                if(strlen(res->valuestring) > 0)
+                {
+                    value = res->valuestring;
+                    ret_val = RET_OK;
+                }
             }
         }
         cJSON_Delete(json_obj);
@@ -843,42 +1011,50 @@ int utils::modem_conf_get(string key, string &value)
     return ret_val;
 }
 
+int utils::hex_printf(char *data, u8 len)
+{
+    int ret_val = RET_OK;
+    int i = 0;
+    char const hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+    string hex_str = "";
+    for(i = 0; i < len; i++)
+    {
+        char const byte = data[i];
+        hex_str += hex_chars[ ( byte & 0xF0 ) >> 4 ];
+        hex_str += hex_chars[ ( byte & 0x0F ) >> 0 ];
+    }
+
+    debug_printf("%s\n", hex_str.c_str());
+    return ret_val;
+}
+
 int utils::dump_log_file(string &str_dump)
 {
     int ret_val = RET_OK;
     FILE* fp = NULL;
     char buf[256] = {0,};
-#if 0
-    fp = fopen("/data/nap-client.log.bak", "rt");
-    if(fp != NULL)
+
+    string file_name = "/data/nap-client.log.bak";
+    u32 file_sz = utils::file_size(file_name);
+    if(file_sz < (LOG_FILE_SIZE_MAX + (32*1024))) // 512 + 32 kbyte
     {
-        while(!feof(fp))
+        fp = fopen(file_name.c_str(), "rt");
+        if(fp != NULL)
         {
-            if(fgets(buf, sizeof(buf), fp) != nullptr)
+            while(!feof(fp))
             {
-                str_dump.append(buf);
+                if(fgets(buf, sizeof(buf), fp) != nullptr)
+                {
+                    str_dump.append(buf);
+                }
             }
+            fclose(fp);
         }
-        fclose(fp);
     }
-#endif
+
     fp = fopen("/data/nap-client.log", "rt"); // NAP_LOG_FILE
     if(fp != NULL)
     {
-#if 0
-        int file_sz = 0;
-        int offset_sz = -(32 * 1024);
-        fseek(fp, 0, SEEK_END);
-        file_sz = ftell(fp);
-        if(file_sz > offset_sz)
-        {
-            fseek(fp, offset_sz, SEEK_END);
-        }
-        else
-        {
-            fseek(fp, 0, SEEK_SET);
-        }
-#endif
         while(!feof(fp))
         {
             if(fgets(buf, sizeof(buf), fp) != nullptr)
@@ -892,7 +1068,7 @@ int utils::dump_log_file(string &str_dump)
     return ret_val;
 }
 
-u32 utils::udhcpc_renewal(void)
+int utils::udhcpc_renewal(void)
 {
     // cat /tmp/run/udhcpc-eth1.pid
     // kill -16 3460      // USR1
